@@ -1,0 +1,38 @@
+{
+  "name": "job-importer-backend",
+  "version": "1.0.0",
+  "description": "Scalable job importer with queue processing and import history tracking",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "worker": "node src/queues/worker.js",
+    "seed": "node src/seeders/seed.js",
+    "clear": "node src/seeders/clearData.js"
+  },
+  "keywords": [
+    "job-importer",
+    "bullmq",
+    "redis",
+    "mongodb",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "bullmq": "^5.0.0",
+    "ioredis": "^5.3.2",
+    "fast-xml-parser": "^4.3.2",
+    "axios": "^1.6.0",
+    "node-cron": "^3.0.3",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
+

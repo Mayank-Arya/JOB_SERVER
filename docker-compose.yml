@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # API Server
+  api:
+    build: .
+    container_name: job-importer-api
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/job-importer
+      - REDIS_URL=redis://redis:6379
+      - WORKER_CONCURRENCY=5
+      - CRON_SCHEDULE=0 * * * *
+      - JOB_FEED_URLS=${JOB_FEED_URLS}
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+    networks:
+      - job-importer-network
+    volumes:
+      - ./logs:/app/logs
+
+  # Worker Process
+  worker:
+    build: .
+    container_name: job-importer-worker
+    command: node src/queues/worker.js
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/job-importer
+      - REDIS_URL=redis://redis:6379
+      - WORKER_CONCURRENCY=5
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+    networks:
+      - job-importer-network
+    volumes:
+      - ./logs:/app/logs
+    deploy:
+      replicas: 2  # Run 2 worker instances
+
+  # MongoDB
+  mongo:
+    image: mongo:5
+    container_name: job-importer-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+    networks:
+      - job-importer-network
+    environment:
+      - MONGO_INITDB_DATABASE=job-importer
+
+  # Redis
+  redis:
+    image: redis:6-alpine
+    container_name: job-importer-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - job-importer-network
+    command: redis-server --appendonly yes
+
+volumes:
+  mongo-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  job-importer-network:
+    driver: bridge
+
